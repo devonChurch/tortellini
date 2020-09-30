@@ -1,11 +1,9 @@
 const path = require("path");
-const { promisify } = require("util");
-const { exec } = require("child_process");
-const execAsync = promisify(exec);
 const webpack = require("webpack");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 
+const { BRANCH_NAME = "local" } = process.env;
 const DIR_SRC = path.resolve(__dirname, "src");
 const DIR_DIST = path.resolve(__dirname, "dist");
 
@@ -24,20 +22,16 @@ const DIR_DIST = path.resolve(__dirname, "dist");
  *
  * @returns {String}
  */
-const getBuildName = async () => {
-  const { stdout } = await execAsync("git branch --show-current");
-
-  return stdout
-    .toLowerCase()
+const getBuildName = () =>
+  BRANCH_NAME.toLowerCase()
     .replace(/\n/g, "")
     .replace(/[^a-z]/g, "-")
     .replace(/-{2,}/g, "-");
-};
 
 module.exports = async (_, args) => {
-  const buildName = await getBuildName();
+  const buildName = getBuildName();
 
-  console.log({ buildName });
+  console.log({ BRANCH_NAME, DIR_SRC, DIR_DIST, buildName });
 
   return {
     entry: path.resolve(DIR_SRC, "index"),

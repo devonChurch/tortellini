@@ -16,6 +16,8 @@ steps:
 
   - script: yarn build
     displayName: "build application"
+    env:
+      BRANCH_NAME: $(Build.SourceBranchName)
 
   - publish: ./dist
     artifact: dist_build_artifact
