@@ -3,7 +3,7 @@ const webpack = require("webpack");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 
-const { BRANCH_NAME = "local" } = process.env;
+const { BRANCH_NAME = "local", POTATO } = process.env;
 const DIR_SRC = path.resolve(__dirname, "src");
 const DIR_DIST = path.resolve(__dirname, "dist");
 
@@ -31,7 +31,7 @@ const getBuildName = () =>
 module.exports = async (_, args) => {
   const buildName = getBuildName();
 
-  console.log({ BRANCH_NAME, DIR_SRC, DIR_DIST, buildName });
+  console.log({ BRANCH_NAME, POTATO, DIR_SRC, DIR_DIST, buildName });
 
   return {
     entry: path.resolve(DIR_SRC, "index"),

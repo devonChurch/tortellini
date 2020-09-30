@@ -14,6 +14,13 @@ steps:
   - script: yarn install --frozen-lockfile
     displayName: "install Node.js dependencies"
 
+  - script: |
+      echo "##vso[task.setvariable variable=POTATO]p_o_t_a_t_o"
+      echo $(POTATO)
+    displayName: "set up variable"
+    env:
+      BRANCH_NAME: $(Build.SourceBranchName)
+
   - script: yarn build
     displayName: "build application"
     env:
