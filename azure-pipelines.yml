@@ -1,3 +1,5 @@
+name: $(Build.SourceBranchName)-$(BuildID)
+
 trigger: none
 
 pool:
