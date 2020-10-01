@@ -14,7 +14,7 @@ steps:
   - script: yarn install --frozen-lockfile
     displayName: "install Node.js dependencies"
 
-  - script: yarn build
+  - script: yarn build:production
     displayName: "build application"
     env:
       BRANCH_NAME: $(Build.SourceBranchName)

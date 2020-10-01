@@ -6,11 +6,14 @@
   "author": "Devon Church <notifydevon@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "build": "yarn clean && webpack --mode=production",
+    "start": "npx http-server ./dist",
+    "build:development": "yarn clean && webpack --mode=development",
+    "build:production": "webpack --mode=production",
     "clean": "rm -rf ./dist"
   },
   "devDependencies": {
     "clean-webpack-plugin": "^3.0.0",
+    "copy-webpack-plugin": "^6.1.1",
     "html-webpack-plugin": "^4.5.0",
     "webpack": "^4.44.2",
     "webpack-cli": "^3.3.12"

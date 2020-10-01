@@ -1,8 +1,11 @@
 const path = require("path");
 const webpack = require("webpack");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
+const CopyPlugin = require("copy-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 
+const PRODUCTION = "production";
+const DEVELOPMENT = "development";
 const { BRANCH_NAME = "local" } = process.env;
 const DIR_SRC = path.resolve(__dirname, "src");
 const DIR_DIST = path.resolve(__dirname, "dist");
@@ -29,6 +32,10 @@ const getBuildName = () =>
     .replace(/-{2,}/g, "-");
 
 module.exports = async (_, args) => {
+  const MODE = args.mode;
+  const IS_NOT_DEVELOPMENT = MODE !== DEVELOPMENT;
+  const IS_DEVELOPMENT = !IS_NOT_DEVELOPMENT;
+
   const buildName = getBuildName();
 
   console.log({ BRANCH_NAME, DIR_SRC, DIR_DIST, buildName });
@@ -46,8 +53,22 @@ module.exports = async (_, args) => {
       new HtmlWebpackPlugin(),
 
       new webpack.EnvironmentPlugin({
-        BRANCH_NAME: buildName,
+        BUILD_NAME: buildName,
       }),
-    ],
+
+      // We need to simulate the Azure Pipeline deploy sequence where each environment
+      // is populated with a custom configuration to the domain root. Here we copy
+      // our config across into the `/dist/` folder to be picked up with the local
+      // DevServer to emulate a environment agnostic run time initialisation.
+      IS_DEVELOPMENT &&
+        new CopyPlugin({
+          patterns: [
+            {
+              from: path.resolve(DIR_SRC, "env.config.json"),
+              to: path.resolve(DIR_DIST, "env.config.json"),
+            },
+          ],
+        }),
+    ].filter(Boolean),
   };
 };
