@@ -1,0 +1,70 @@
+echo
+echo "= = = = = = = = = = = = = = "
+echo
+echo "BUILD NAME:"
+echo
+echo "Before we inject any additional files/folders into the /dist directory, we"
+echo "get a reference to the only folder there currently (which is the build name"
+echo "generated from the current git branch). We store this as a variable for later"
+echo "when we push to our S3 bucket."
+echo
+echo "= = = = = = = = = = = = = = "
+echo
+
+export BUILD_NAME=$(ls)
+echo $BUILD_NAME
+
+echo
+echo "= = = = = = = = = = = = = = "
+echo
+echo "SET UP AWS:"
+echo
+echo "Download, Unzip and Install the AWS CLI for Linux."
+echo 
+echo "NOTE: This adds extra folders to our /dist directory, so make sure to ONLY"
+echo "push up the relevant assets to S3 in the Sync phase."
+echo
+echo "= = = = = = = = = = = = = = "
+echo
+
+echo
+echo "- - - - - - - - - - - - - - "
+echo "Download:"
+echo "- - - - - - - - - - - - - - "
+echo
+
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+
+echo
+echo "- - - - - - - - - - - - - - "
+echo "Unzip:"
+echo "- - - - - - - - - - - - - - "
+echo
+
+unzip awscliv2.zip
+
+echo
+echo "- - - - - - - - - - - - - - "
+echo "Install:"
+echo "- - - - - - - - - - - - - - "
+echo
+
+./aws/install
+aws --version
+
+echo
+echo "= = = = = = = = = = = = = = "
+echo
+echo "SYNC WITH S3:"
+echo
+echo "Sync our unique build name folder (generated from the current git branch)"
+echo "into our S3 bucket for the current environment. The custom parts of this"
+echo "command are held in the global Task variables."
+echo 
+echo "NOTE: when using --delete with an S3 Sync, only files, NOT folders, will be"
+echo "deleted."
+echo
+echo "= = = = = = = = = = = = = = "
+echo
+
+AWS_ACCESS_KEY_ID=$(AWS.AccessKeyID) AWS_SECRET_ACCESS_KEY=$(AWS.SecretAccessKey) AWS_DEFAULT_REGION=$(AWS.Region) aws s3 sync ./$BUILD_NAME s3://tortellini-azure/$BUILD_NAME --delete
