@@ -67,4 +67,4 @@ echo
 echo "= = = = = = = = = = = = = = "
 echo
 
-AWS_ACCESS_KEY_ID=$(AWS.AccessKeyID) AWS_SECRET_ACCESS_KEY=$(AWS.SecretAccessKey) AWS_DEFAULT_REGION=$(AWS.Region) aws s3 sync ./$BUILD_NAME s3://tortellini-azure/$BUILD_NAME --delete
+AWS_ACCESS_KEY_ID=$(AWS.AccessKeyID) AWS_SECRET_ACCESS_KEY=$(AWS.SecretAccessKey) AWS_DEFAULT_REGION=$(AWS.Region) aws s3 sync ./$BUILD_NAME s3://$(Bucket.Test)/$BUILD_NAME --delete
