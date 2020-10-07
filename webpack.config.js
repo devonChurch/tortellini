@@ -6,7 +6,7 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 
 const PRODUCTION = "production";
 const DEVELOPMENT = "development";
-const { BRANCH_NAME = "local" } = process.env;
+const { BRANCH_NAME_FULL = "local" } = process.env;
 const DIR_SRC = path.resolve(__dirname, "src");
 const DIR_DIST = path.resolve(__dirname, "dist");
 
@@ -26,7 +26,17 @@ const DIR_DIST = path.resolve(__dirname, "dist");
  * @returns {String}
  */
 const getBuildName = () =>
-  BRANCH_NAME.toLowerCase()
+  BRANCH_NAME_FULL.toLowerCase()
+
+    // Azure incorrectly pulls out the branch name by only getting the last segment
+    // from a "/" delimiter.
+    // @example feature/foo ---> "foo"
+    // @example bugfix/bar ---> "bar"
+    // Azure has decided not to fix this issue
+    // @see https://github.com/microsoft/azure-pipelines-agent/issues/838
+    // In our case we need to get the "full" branch reference then remove the excess.
+    .replace(/refs\/heads\//g, "")
+
     .replace(/\n/g, "")
     .replace(/[^a-z]/g, "-")
     .replace(/-{2,}/g, "-");
@@ -38,7 +48,7 @@ module.exports = async (_, args) => {
 
   const buildName = getBuildName();
 
-  console.log({ BRANCH_NAME, DIR_SRC, DIR_DIST, buildName });
+  console.log({ BRANCH_NAME_FULL, DIR_SRC, DIR_DIST, buildName });
 
   return {
     entry: path.resolve(DIR_SRC, "index"),
