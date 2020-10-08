@@ -6,10 +6,10 @@ pool:
   vmImage: "ubuntu-latest"
 
 stages:
-  - stage: build
+  - stage: buildApplication
+    displayName: "Build application"
     jobs:
       - job: buildApplication
-        displayName: "Build application"
 
         steps:
           - task: NodeTool@0
@@ -31,26 +31,50 @@ stages:
             artifact: dist_build_artifact
             displayName: "Publish application"
 
-  - stage: deploy
+  - stage: deployTest
+    displayName: "Deploy to Test"
     jobs:
       - deployment: DeployWeb
-        displayName: "Deploy to Test"
         environment: "tortellini-test"
         strategy:
           runOnce:
             deploy:
               steps:
-                - download: current # refers to artifacts published by current pipeline
+                - download: current
                   artifact: dist_build_artifact
 
                 - script: |
                     cd $(Pipeline.Workspace)/dist_build_artifact
                     export BUILD_NAME=$(ls)
                     echo $BUILD_NAME
-                    aws s3 sync ./$BUILD_NAME s3://$AWS_BUCKET_TEST/$BUILD_NAME --delete
+                    aws s3 sync ./$BUILD_NAME s3://$AWS_BUCKET/$BUILD_NAME --delete
                   displayName: "Sync with AWS bucket"
                   env:
                     AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
                     AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
-                    AWS_BUCKET_TEST: $(AWS_BUCKET_TEST)
                     AWS_DEFAULT_REGION: $(AWS_DEFAULT_REGION)
+                    AWS_BUCKET: $(AWS_BUCKET_TEST)
+
+  - stage: deployStage
+    displayName: "Deploy to Staging"
+    jobs:
+      - deployment: DeployWeb
+        environment: "tortellini-staging"
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - download: current
+                  artifact: dist_build_artifact
+
+                - script: |
+                    cd $(Pipeline.Workspace)/dist_build_artifact
+                    export BUILD_NAME=$(ls)
+                    echo $BUILD_NAME
+                    aws s3 sync ./$BUILD_NAME s3://$AWS_BUCKET_STAGING/$BUILD_NAME --delete
+                  displayName: "Sync with AWS bucket"
+                  env:
+                    AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
+                    AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
+                    AWS_DEFAULT_REGION: $(AWS_DEFAULT_REGION)
+                    AWS_BUCKET: $(AWS_BUCKET_STAGING)
