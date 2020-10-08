@@ -3,24 +3,54 @@ name: $(Build.SourceBranchName)-$(BuildID)
 trigger: none
 
 pool:
-  vmImage: 'ubuntu-latest'
+  vmImage: "ubuntu-latest"
 
-steps:
-  - task: NodeTool@0
-    inputs:
-      versionSpec: "12.x"
-    displayName: "Install Node.js"
+stages:
+  - stage: build
+    jobs:
+      - job: buildApplication
+        displayName: "Build application"
 
-  # Emulate `npm ci` as closely as possible with yarn.
-  # @see https://classic.yarnpkg.com/en/docs/cli/install/#toc-yarn-install-frozen-lockfile
-  - script: yarn install --frozen-lockfile
-    displayName: "install Node.js dependencies"
+        steps:
+          - task: NodeTool@0
+            inputs:
+              versionSpec: "12.x"
+            displayName: "Install Node.js"
 
-  - script: yarn build:production
-    displayName: "build application"
-    env:
-      BRANCH_NAME_FULL: $(Build.SourceBranch)
+          # Emulate `npm ci` as closely as possible with yarn.
+          # @see https://classic.yarnpkg.com/en/docs/cli/install/#toc-yarn-install-frozen-lockfile
+          - script: yarn install --frozen-lockfile
+            displayName: "Install Node.js dependencies"
 
-  - publish: ./dist
-    artifact: dist_build_artifact
-    displayName: "publish application"
+          - script: yarn build:production
+            displayName: "Build application"
+            env:
+              BRANCH_NAME_FULL: $(Build.SourceBranch)
+
+          - publish: $(System.DefaultWorkingDirectory)/dist
+            artifact: dist_build_artifact
+            displayName: "Publish application"
+
+  - stage: deploy
+    jobs:
+      - deployment: DeployWeb
+        displayName: "Deploy to Test"
+        environment: "tortellini-test"
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - download: current # refers to artifacts published by current pipeline
+                  artifact: dist_build_artifact
+
+                - script: |
+                    cd $(Pipeline.Workspace)/dist_build_artifact
+                    export BUILD_NAME=$(ls)
+                    echo $BUILD_NAME
+                    aws s3 sync ./$BUILD_NAME s3://$AWS_BUCKET_TEST/$BUILD_NAME --delete
+                  displayName: "Sync with AWS bucket"
+                  env:
+                    AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
+                    AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
+                    AWS_BUCKET_TEST: $(AWS_BUCKET_TEST)
+                    AWS_DEFAULT_REGION: $(AWS_DEFAULT_REGION)
