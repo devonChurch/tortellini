@@ -34,7 +34,7 @@ stages:
   - stage: deployTest
     displayName: "Deploy to Test"
     jobs:
-      - deployment: DeployWeb
+      - deployment: deployTest
         environment: "tortellini-test"
         strategy:
           runOnce:
@@ -58,7 +58,7 @@ stages:
   - stage: deployStage
     displayName: "Deploy to Staging"
     jobs:
-      - deployment: DeployWeb
+      - deployment: deployStage
         environment: "tortellini-staging"
         strategy:
           runOnce:
@@ -71,10 +71,34 @@ stages:
                     cd $(Pipeline.Workspace)/dist_build_artifact
                     export BUILD_NAME=$(ls)
                     echo $BUILD_NAME
-                    aws s3 sync ./$BUILD_NAME s3://$AWS_BUCKET_STAGING/$BUILD_NAME --delete
+                    aws s3 sync ./$BUILD_NAME s3://$AWS_BUCKET/$BUILD_NAME --delete
                   displayName: "Sync with AWS bucket"
                   env:
                     AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
                     AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
                     AWS_DEFAULT_REGION: $(AWS_DEFAULT_REGION)
                     AWS_BUCKET: $(AWS_BUCKET_STAGING)
+
+  - stage: deployProduction
+    displayName: "Deploy to Production"
+    jobs:
+      - deployment: deployProduction
+        environment: "tortellini-production"
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - download: current
+                  artifact: dist_build_artifact
+
+                - script: |
+                    cd $(Pipeline.Workspace)/dist_build_artifact
+                    export BUILD_NAME=$(ls)
+                    echo $BUILD_NAME
+                    aws s3 sync ./$BUILD_NAME s3://$AWS_BUCKET/$BUILD_NAME --delete
+                  displayName: "Sync with AWS bucket"
+                  env:
+                    AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
+                    AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
+                    AWS_DEFAULT_REGION: $(AWS_DEFAULT_REGION)
+                    AWS_BUCKET: $(AWS_BUCKET_PRODUCTION)
