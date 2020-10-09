@@ -75,7 +75,7 @@ module.exports = async (_, args) => {
           patterns: [
             {
               from: path.resolve(DIR_SRC, "env.config.json"),
-              to: path.resolve(DIR_DIST, "env.config.json"),
+              to: path.resolve(DIR_DIST, BRANCH_NAME_FULL, "env.config.json"),
             },
           ],
         }),

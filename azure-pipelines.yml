@@ -46,8 +46,8 @@ stages:
                 - script: |
                     cd $(Pipeline.Workspace)/dist_build_artifact
                     export BUILD_NAME=$(ls)
-                    echo $BUILD_NAME
                     aws s3 sync ./$BUILD_NAME s3://$AWS_BUCKET/$BUILD_NAME --delete
+                    aws s3 cp s3://$AWS_BUCKET/env.config.json s3://$AWS_BUCKET/$BUILD_NAME/env.config.json
                   displayName: "Sync with AWS bucket"
                   env:
                     AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
@@ -70,8 +70,8 @@ stages:
                 - script: |
                     cd $(Pipeline.Workspace)/dist_build_artifact
                     export BUILD_NAME=$(ls)
-                    echo $BUILD_NAME
                     aws s3 sync ./$BUILD_NAME s3://$AWS_BUCKET/$BUILD_NAME --delete
+                    aws s3 cp s3://$AWS_BUCKET/env.config.json s3://$AWS_BUCKET/$BUILD_NAME/env.config.json
                   displayName: "Sync with AWS bucket"
                   env:
                     AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
@@ -94,8 +94,8 @@ stages:
                 - script: |
                     cd $(Pipeline.Workspace)/dist_build_artifact
                     export BUILD_NAME=$(ls)
-                    echo $BUILD_NAME
                     aws s3 sync ./$BUILD_NAME s3://$AWS_BUCKET/$BUILD_NAME --delete
+                    aws s3 cp s3://$AWS_BUCKET/env.config.json s3://$AWS_BUCKET/$BUILD_NAME/env.config.json
                   displayName: "Sync with AWS bucket"
                   env:
                     AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)

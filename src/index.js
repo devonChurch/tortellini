@@ -11,7 +11,7 @@
 // Add environment:
 
 (async () => {
-  const { environment } = await fetch("../env.config.json").then((response) => response.json());
+  const { environment } = await fetch("./env.config.json").then((response) => response.json());
   const element = document.createElement("h2");
 
   element.textContent = `Environment: ${environment}`;
