@@ -55,6 +55,7 @@ module.exports = async (_, args) => {
 
     output: {
       path: path.resolve(DIR_DIST, buildName),
+      filename: "[name]-[hash].js"
     },
 
     plugins: [
