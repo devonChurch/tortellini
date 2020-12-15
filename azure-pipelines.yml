@@ -5,6 +5,11 @@ trigger: none
 pool:
   vmImage: "ubuntu-latest"
 
+variables:
+  # A dummy value that will be replaced with the exact Node.js version from our
+  # `.nvmrc` file.
+  NVM_VERSION: '12'
+
 stages:
   - stage: buildApplication
     displayName: "Build application"
@@ -12,9 +17,24 @@ stages:
       - job: buildApplication
 
         steps:
+
+          # @note Azure no longer recommends using NVM as a Node Version Manager.
+          #
+          # @see https://docs.microsoft.com/en-us/azure/devops/pipelines/ecosystems/javascript?view=azure-devops&tabs=code#troubleshooting
+          # @see https://docs.microsoft.com/en-us/azure/devops/pipelines/process/variables?view=azure-devops&tabs=yaml%2Cbatch#understand-variable-syntax
+          #
+          # Instead we extract the version inside of `.nvmrc`, store it as a
+          # "output parameter" so the we can inject it into the `versionSpec`
+          # reference.
+          # 
+          # This allows us to use a consistent Node.js version between local
+          # development and CI.
+          - bash: echo '##vso[task.setvariable variable=NVMRC]'$(cat .nvmrc)
+            displayName: "Extract NVM version"
+
           - task: NodeTool@0
             inputs:
-              versionSpec: "12.x"
+              versionSpec: $(NVM_VERSION)
             displayName: "Install Node.js"
 
           # Emulate `npm ci` as closely as possible with yarn.
